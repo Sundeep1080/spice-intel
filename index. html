@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SPICE INTEL — Byadgi Trade Command</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --saffron: #E8850A;
+  --turmeric: #D4A017;
+  --chilli: #C0392B;
+  --pepper: #1a1a2e;
+  --cardamom: #2d6a4f;
+  --cream: #FDF6E3;
+  --ink: #1C1209;
+  --muted: #8B7355;
+  --border: #D4C4A0;
+  --success: #27ae60;
+  --danger: #e74c3c;
+  --warn: #f39c12;
+  --surface: #1C160E;
+  --surface2: #13100a;
+  --line: #2a2015;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background:var(--ink);
+  color:var(--cream);
+  font-family:'IBM Plex Mono',monospace;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:9999;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  background:linear-gradient(90deg,var(--chilli) 0%,#7a1508 60%,var(--ink) 100%);
+  padding:0 1rem;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:2px solid var(--saffron);
+  position:sticky;
+  top:0;
+  z-index:200;
+  height:52px;
+  gap:0.5rem;
+}
+.brand {
+  font-family:'Playfair Display',serif;
+  font-size:1.1rem;
+  font-weight:900;
+  color:var(--cream);
+  white-space:nowrap;
+  display:flex;
+  align-items:center;
+  gap:0.4rem;
+}
+.brand em { color:var(--turmeric); font-style:normal; }
+.live-pill {
+  background:var(--success);
+  color:#fff;
+  font-size:0.55rem;
+  padding:2px 6px;
+  border-radius:2px;
+  letter-spacing:.1em;
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.topbar-right {
+  display:flex;
+  align-items:center;
+  gap:0.7rem;
+  font-size:0.62rem;
+  color:var(--border);
+  flex-shrink:0;
+}
+#clock { color:var(--turmeric); font-weight:500; }
+
+/* ── API KEY BANNER ── */
+#api-banner {
+  background:#1a0e06;
+  border-bottom:1px solid var(--saffron);
+  padding:0.5rem 1rem;
+  display:flex;
+  align-items:center;
+  gap:0.6rem;
+  flex-wrap:wrap;
+}
+#api-banner.hidden { display:none; }
+.api-label { font-size:0.62rem; color:var(--turmeric); white-space:nowrap; }
+#api-key-input {
+  flex:1;
+  min-width:200px;
+  background:#13100a;
+  border:1px solid var(--saffron);
+  color:var(--cream);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.68rem;
+  padding:0.35rem 0.6rem;
+  outline:none;
+  border-radius:2px;
+}
+.btn-api {
+  background:var(--saffron);
+  color:var(--ink);
+  border:none;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:0.65rem;
+  font-weight:600;
+  padding:0.35rem 0.9rem;
+  cursor:pointer;
+  border-radius:2px;
+  white-space:nowrap;
+}
+.btn-api:hover { background:var(--turmeric); }
+.api-help { font-size:0.58rem; color:var(--muted); }
+.api-help a { color:var(--saffron); }
+
+/* ── TABS ── */
+.tabs {
+  background:#100d07;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  overflow-x:auto;
+  scrollbar-width:none;
+  padding:0 0.5rem;
+  position:sticky;
+  top:52px;
+  z-index:100;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab {
+  padding:.65rem 1.1rem;
+  font-size:.62rem;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  color:var(--muted);
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  white-space:nowrap;
+  transition:all .2s;
+  font-family:'IBM Plex Mono',monospace;
+  user-select:none;
+}
+.tab:hover{color:var(--cream)}
+.tab.active{color:var(--saffron);border-bottom-color:var(--saffron)}
+
+/* ── MAIN ── */
+.main { padding:1rem; max-width:1600px; margin:0 auto; }
+.panel { display:none; }
+.panel.active { display:block; animation:fadeUp .3s ease; }
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── CARD ── */
+.card {
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:1rem;
+  margin-bottom:1rem;
+}
+.card-title {
+  font-family:'Playfair Display',serif;
+  font-size:0.78rem;
+  color:var(--turmeric);
+  letter-spacing:.04em;
+  margin-bottom:.8rem;
+  display:flex;
+  align-items:center;
+  gap:.4rem;
+  text-transform:uppercase;
+}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+
+/* ── SECTION HEADER ── */
+.section-header {
+  font-family:'Playfair Display',serif;
+  font-size:1.05rem;
+  color:var(--cream);
+  margin-bottom:.2rem;
+}
+.section-sub {
+  font-size:.62rem;
+  color:var(--muted);
+  margin-bottom:1rem;
+  font-family:'Crimson Pro',serif;
+  font-style:italic;
+  line-height:1.5;
+}
+
+/* ── KPI ── */
+.kpi-strip {
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  gap:.5rem;
+  margin-bottom:1rem;
+}
+.kpi {
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-top:2px solid var(--saffron);
+  padding:.7rem .5rem;
+  text-align:center;
+}
+.kpi-label { font-size:.52rem; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; margin-bottom:.25rem; }
+.kpi-value { font-size:1rem; font-weight:500; color:var(--cream); font-family:'Playfair Display',serif; }
+.kpi-sub { font-size:.55rem; margin-top:.15rem; color:var(--muted); }
+.up{color:var(--success)}.down{color:var(--danger)}.neu{color:var(--muted)}
+
+/* ── PRICE TABLE ── */
+table { width:100%; border-collapse:collapse; font-size:.68rem; }
+th {
+  background:var(--surface2);
+  color:var(--turmeric);
+  padding:.5rem .7rem;
+  text-align:left;
+  font-size:.58rem;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  font-weight:400;
+  border-bottom:1px solid var(--line);
+}
+td { padding:.5rem .7rem; border-bottom:1px solid #1f1910; vertical-align:middle; }
+tr:hover td { background:#221a0f; }
+.price-cell {
+  background:transparent;
+  border:none;
+  border-bottom:1px solid #3a3020;
+  color:var(--turmeric);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.68rem;
+  width:90px;
+  padding:2px 4px;
+  outline:none;
+}
+.price-cell:focus{border-bottom-color:var(--saffron)}
+
+/* ── PRICE STATUS ── */
+.fetch-status {
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  font-size:.62rem;
+  margin-bottom:.8rem;
+  padding:.5rem .8rem;
+  background:var(--surface2);
+  border-radius:2px;
+  border:1px solid var(--line);
+}
+.status-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.dot-green{background:var(--success)}
+.dot-yellow{background:var(--warn);animation:blink 1.5s infinite}
+.dot-red{background:var(--danger)}
+.dot-gray{background:var(--muted)}
+
+/* ── HEATMAP ── */
+.heatmap-wrap { overflow-x:auto; }
+.heatmap-grid {
+  display:grid;
+  gap:2px;
+  font-size:.58rem;
+  min-width:700px;
+}
+.hm-header {
+  background:var(--surface2);
+  padding:.35rem .25rem;
+  text-align:center;
+  color:var(--muted);
+  font-size:.54rem;
+}
+.hm-city {
+  background:var(--surface2);
+  padding:.35rem .5rem;
+  color:var(--cream);
+  font-size:.6rem;
+  display:flex;
+  align-items:center;
+}
+.hm-cell {
+  padding:.35rem .1rem;
+  text-align:center;
+  cursor:default;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.6rem;
+  font-weight:500;
+  border-radius:2px;
+  transition:transform .1s;
+}
+.hm-cell:hover{transform:scale(1.08);z-index:5;position:relative}
+.h0{background:#1C160E;color:#3a3020}
+.h1{background:#2d1f0a;color:#8B6530}
+.h2{background:#4a2e08;color:#C4874A}
+.h3{background:#6b3a0a;color:#E8A560}
+.h4{background:#8B4A0C;color:#F0C070}
+.h5{background:#C0392B;color:#FFF3CD}
+
+/* ── SEASON ── */
+.season-row{display:flex;align-items:center;margin-bottom:.4rem;gap:.3rem}
+.season-label{width:120px;font-size:.6rem;color:var(--cream);flex-shrink:0;line-height:1.3}
+.season-sublabel{font-size:.5rem;color:var(--muted)}
+.season-months{display:flex;gap:2px;flex:1;min-width:280px}
+.mcell{flex:1;height:26px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:.48rem;font-weight:500;cursor:default;transition:opacity .15s}
+.mcell:hover{opacity:.75}
+.s-off{background:#1f1910;color:#3a3020}
+.s-low{background:#1a3020;color:#60a870}
+.s-mid{background:#7a5e10;color:#F0C060}
+.s-peak{background:#8B1A10;color:#FFC8C0}
+.s-harv{background:#0f3a1a;color:#80EE90}
+
+/* ── BUYER / SUPPLIER CARDS ── */
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem}
+.bcard {
+  background:var(--surface);
+  border:1px solid var(--line);
+  padding:.85rem;
+  border-radius:3px;
+  position:relative;
+  transition:border-color .2s;
+}
+.bcard:hover{border-color:var(--saffron)}
+.scard {
+  background:#0d1a10;
+  border:1px solid #1a3020;
+  padding:.85rem;
+  border-radius:3px;
+  transition:border-color .2s;
+}
+.scard:hover{border-color:var(--cardamom)}
+.tier-badge {
+  position:absolute;
+  top:.5rem;
+  right:.5rem;
+  font-size:.5rem;
+  padding:2px 5px;
+  border-radius:2px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.t-fmcg{background:#1a3a5c;color:#60a8e0}
+.t-hotel{background:#3a1a5c;color:#a060e0}
+.t-mandi{background:#1a3a1a;color:#60c060}
+.t-export{background:#5c3a1a;color:#e0a060}
+.t-industrial{background:#3a1a1a;color:#e06060}
+.bname{font-family:'Playfair Display',serif;font-size:.85rem;color:var(--cream);margin-bottom:.2rem;padding-right:4rem}
+.bcity{font-size:.58rem;color:var(--muted);margin-bottom:.4rem}
+.tags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:.4rem}
+.stag{background:#2a1f10;border:1px solid #3a2e18;color:var(--turmeric);font-size:.52rem;padding:1px 5px;border-radius:1px}
+.ctag{background:#122010;border:1px solid #1a3020;color:#80d890;font-size:.52rem;padding:1px 5px;border-radius:1px}
+.bvol{font-size:.58rem;color:var(--muted);margin-bottom:.3rem}
+.bvol span{color:var(--cream)}
+.bnote{font-size:.58rem;color:var(--muted);line-height:1.4;margin-bottom:.3rem}
+.bcontact{font-size:.56rem;color:#60a880;margin-bottom:.5rem}
+.row-btns{display:flex;gap:.35rem;margin-top:.5rem}
+.btn-xs{font-family:'IBM Plex Mono',monospace;font-size:.55rem;padding:3px 9px;border:1px solid;background:transparent;cursor:pointer;border-radius:2px;letter-spacing:.04em;transition:all .15s}
+.btn-green{border-color:var(--success);color:var(--success)}
+.btn-green:hover{background:var(--success);color:#fff}
+.btn-gray{border-color:var(--muted);color:var(--muted)}
+.btn-gray:hover{background:var(--muted);color:var(--ink)}
+
+/* ── PIPELINE ── */
+.pipe-form{display:grid;grid-template-columns:repeat(3,1fr) repeat(3,1fr) auto;gap:.5rem;align-items:end;margin-bottom:.8rem}
+.fg{display:flex;flex-direction:column;gap:.25rem}
+.flabel{font-size:.55rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.finput,.fselect{background:var(--surface2);border:1px solid var(--line);color:var(--cream);font-family:'IBM Plex Mono',monospace;font-size:.65rem;padding:.35rem .5rem;outline:none;border-radius:2px;transition:border-color .15s;width:100%}
+.finput:focus,.fselect:focus{border-color:var(--saffron)}
+.fselect option{background:var(--surface)}
+.btn-add{background:var(--saffron);color:var(--ink);border:none;font-family:'IBM Plex Mono',monospace;font-size:.65rem;font-weight:600;padding:.38rem .9rem;cursor:pointer;border-radius:2px;letter-spacing:.04em;white-space:nowrap}
+.btn-add:hover{background:var(--turmeric)}
+.sbadge{font-size:.55rem;padding:2px 7px;border-radius:2px;text-transform:uppercase;letter-spacing:.04em}
+.s-new{background:#1a3a5c;color:#60a8e0}
+.s-follow{background:#3a2a0a;color:var(--turmeric)}
+.s-neg{background:#1a2a3a;color:#60c0e0}
+.s-closed{background:#1a3a1a;color:var(--success)}
+.s-lost{background:#2a1a1a;color:#e06060}
+.del-btn{background:none;border:none;color:#5a3030;cursor:pointer;font-size:.8rem;transition:color .15s}
+.del-btn:hover{color:var(--danger)}
+
+/* ── INTEL ITEMS ── */
+.intel-item{border-left:3px solid;padding:.65rem .9rem;margin-bottom:.5rem;background:#161009}
+.intel-item.hi{border-color:var(--chilli)}
+.intel-item.med{border-color:var(--saffron)}
+.intel-item.lo{border-color:var(--cardamom)}
+.intel-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:.2rem}
+.itag{font-size:.52rem;text-transform:uppercase;letter-spacing:.07em;font-weight:500}
+.intel-item.hi .itag{color:var(--chilli)}
+.intel-item.med .itag{color:var(--saffron)}
+.intel-item.lo .itag{color:#60a880}
+.itime{font-size:.55rem;color:var(--muted)}
+.ititle{font-size:.75rem;color:var(--cream);margin-bottom:.2rem;font-family:'Crimson Pro',serif;font-weight:600}
+.ibody{font-size:.62rem;color:var(--muted);line-height:1.5}
+
+/* ── SOURCE LINKS ── */
+.source-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1rem}
+.slink{background:var(--surface2);border:1px solid var(--line);padding:.7rem;border-radius:3px;text-decoration:none;display:block;transition:border-color .2s}
+.slink:hover{border-color:var(--saffron)}
+.slink-title{font-size:.68rem;color:var(--cream);margin-bottom:.15rem}
+.slink-desc{font-size:.58rem;color:var(--muted);line-height:1.4}
+.slink-url{font-size:.55rem;color:var(--saffron);margin-top:.25rem}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--saffron);padding:1.3rem;max-width:480px;width:92%;border-radius:4px}
+.modal-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--turmeric);margin-bottom:.8rem}
+.modal-close{float:right;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;margin-top:-.2rem}
+.modal textarea{width:100%;background:var(--surface2);border:1px solid var(--line);color:var(--cream);font-family:'IBM Plex Mono',monospace;font-size:.65rem;padding:.5rem;min-height:90px;resize:vertical;outline:none;border-radius:2px;margin-top:.4rem}
+
+/* ── SEARCH / FILTER BAR ── */
+.sbar{display:flex;gap:.4rem;margin-bottom:.8rem;flex-wrap:wrap;align-items:center}
+.sinput{flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--line);color:var(--cream);font-family:'IBM Plex Mono',monospace;font-size:.65rem;padding:.4rem .7rem;outline:none;border-radius:2px}
+.sinput:focus{border-color:var(--saffron)}
+.fbtn{background:var(--surface2);border:1px solid var(--line);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.58rem;padding:.4rem .7rem;cursor:pointer;border-radius:2px;text-transform:uppercase;letter-spacing:.04em;transition:all .15s;white-space:nowrap}
+.fbtn.on,.fbtn:hover{border-color:var(--saffron);color:var(--saffron)}
+
+/* ── LEGEND ── */
+.legend{display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:.7rem}
+.litem{display:flex;align-items:center;gap:.25rem;font-size:.58rem;color:var(--muted)}
+.ldot{width:10px;height:10px;border-radius:1px}
+
+/* ── CHECKLIST ── */
+.check-row{display:flex;gap:.5rem;margin-bottom:.45rem;align-items:flex-start}
+.check-time{color:var(--saffron);font-size:.58rem;min-width:50px;margin-top:.05rem}
+.check-text{font-size:.62rem;color:var(--cream);line-height:1.4}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--surface2)}
+::-webkit-scrollbar-thumb{background:#3a2e18;border-radius:2px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .kpi-strip{grid-template-columns:repeat(4,1fr)}
+  .cards-grid{grid-template-columns:1fr 1fr}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .source-grid{grid-template-columns:1fr 1fr}
+  .pipe-form{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .kpi-strip{grid-template-columns:repeat(2,1fr)}
+  .cards-grid{grid-template-columns:1fr}
+  .source-grid{grid-template-columns:1fr}
+  .pipe-form{grid-template-columns:1fr}
+  .brand{font-size:.9rem}
+  .topbar-right{font-size:.55rem;gap:.4rem}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">🌶 SPICE <em>INTEL</em></div>
+  <div class="topbar-right">
+    <span class="live-pill">● LIVE</span>
+    <span id="clock"></span>
+    <span style="color:#3a3020">|</span>
+    <span>Byadgi, Karnataka</span>
+  </div>
+</div>
+
+<!-- API KEY BANNER -->
+<div id="api-banner">
+  <span class="api-label">🔑 data.gov.in API Key:</span>
+  <input id="api-key-input" type="text" placeholder="Paste your free API key here (register at data.gov.in)">
+  <button class="btn-api" onclick="saveApiKey()">Save &amp; Fetch Prices</button>
+  <span class="api-help">
+    Get free key: <a href="https://data.gov.in/user/register" target="_blank">data.gov.in/user/register</a>
+    → Login → My Account → API Keys → Generate
+  </span>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('overview',this)">⬡ Overview</div>
+  <div class="tab" onclick="switchTab('prices',this)">₹ Live Prices</div>
+  <div class="tab" onclick="switchTab('demand',this)">◉ Demand Radar</div>
+  <div class="tab" onclick="switchTab('seasons',this)">◈ Seasons</div>
+  <div class="tab" onclick="switchTab('buyers',this)">▣ Buyers</div>
+  <div class="tab" onclick="switchTab('suppliers',this)">◆ Suppliers</div>
+  <div class="tab" onclick="switchTab('pipeline',this)">⟳ Pipeline</div>
+  <div class="tab" onclick="switchTab('intel',this)">◎ Daily Intel</div>
+</div>
+
+<div class="main">
+
+<!-- ══════════════════ OVERVIEW ══════════════════ -->
+<div class="panel active" id="panel-overview">
+  <div class="section-header">🌶 Morning Command — <span id="today-date" style="color:var(--saffron)"></span></div>
+  <div class="section-sub">Asset-light spice brokerage · Byadgi Chilli · Black &amp; White Pepper · Turmeric · Dry Ginger · Cashews · Rice · Karnataka origin</div>
+
+  <div class="kpi-strip">
+    <div class="kpi"><div class="kpi-label">Active Leads</div><div class="kpi-value" id="k-leads">0</div><div class="kpi-sub neu">pipeline</div></div>
+    <div class="kpi"><div class="kpi-label">Follow-ups</div><div class="kpi-value" id="k-follow">0</div><div class="kpi-sub down">today</div></div>
+    <div class="kpi"><div class="kpi-label">Closed</div><div class="kpi-value" id="k-closed">0</div><div class="kpi-sub up">this month</div></div>
+    <div class="kpi"><div class="kpi-label">Buyers DB</div><div class="kpi-value">54</div><div class="kpi-sub neu">verified</div></div>
+    <div class="kpi"><div class="kpi-label">Suppliers</div><div class="kpi-value">22</div><div class="kpi-sub neu">networked</div></div>
+    <div class="kpi"><div class="kpi-label">Peak City</div><div class="kpi-value" id="k-peak" style="font-size:.75rem">—</div><div class="kpi-sub up">this month</div></div>
+    <div class="kpi"><div class="kpi-label">Hot Spice</div><div class="kpi-value" id="k-hot" style="font-size:.72rem">—</div><div class="kpi-sub up">demand ↑</div></div>
+    <div class="kpi"><div class="kpi-label">Prices Updated</div><div class="kpi-value" id="k-priceup" style="font-size:.7rem">—</div><div class="kpi-sub neu">last fetch</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🔥 Today's Action Items</div>
+      <div id="ov-actions"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📍 Top Demand Cities This Month</div>
+      <div id="ov-cities"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 Demand Snapshot — <span id="snap-month"></span></div>
+    <div class="heatmap-wrap"><div class="heatmap-grid" id="ov-heatmap" style="grid-template-columns:110px repeat(6,1fr)"></div></div>
+  </div>
+</div>
+
+<!-- ══════════════════ LIVE PRICES ══════════════════ -->
+<div class="panel" id="panel-prices">
+  <div class="section-header">₹ Live Mandi Prices</div>
+  <div class="section-sub">Auto-fetched from data.gov.in (Government of India APMC database). Manual override available for any field. Cashews &amp; White Pepper: update manually from Kollam / Kochi Exchange.</div>
+
+  <div class="fetch-status" id="fetch-status">
+    <div class="status-dot dot-gray" id="sdot"></div>
+    <span id="stext">Enter your API key above to enable auto-fetch. Or update prices manually below.</span>
+    <button onclick="fetchAllPrices()" style="margin-left:auto;background:transparent;border:1px solid var(--saffron);color:var(--saffron);font-family:'IBM Plex Mono',monospace;font-size:.58rem;padding:3px 10px;cursor:pointer;border-radius:2px" id="refresh-btn">↻ Refresh Now</button>
+  </div>
+
+  <div class="source-grid">
+    <a href="https://agmarknet.gov.in" target="_blank" class="slink"><div class="slink-title">🏛 Agmarknet</div><div class="slink-desc">Govt daily mandi prices. All commodities, all states.</div><div class="slink-url">agmarknet.gov.in →</div></a>
+    <a href="https://www.spicesboard.gov.in" target="_blank" class="slink"><div class="slink-title">🌿 Spices Board India</div><div class="slink-desc">Official pepper, turmeric, chilli auction prices.</div><div class="slink-url">spicesboard.gov.in →</div></a>
+    <a href="https://ncdex.com" target="_blank" class="slink"><div class="slink-title">📈 NCDEX Futures</div><div class="slink-desc">Turmeric (Erode), jeera, pepper futures — price direction signal.</div><div class="slink-url">ncdex.com →</div></a>
+    <a href="https://enam.gov.in/web/dashboard/trade-data" target="_blank" class="slink"><div class="slink-title">🌾 e-NAM Trade Data</div><div class="slink-desc">Electronic National Agriculture Market daily prices.</div><div class="slink-url">enam.gov.in →</div></a>
+    <a href="https://data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070" target="_blank" class="slink"><div class="slink-title">🔗 data.gov.in API</div><div class="slink-desc">Direct link to the mandi price API dataset used by this dashboard.</div><div class="slink-url">data.gov.in →</div></a>
+    <a href="https://www.indiamart.com/buyleads/" target="_blank" class="slink"><div class="slink-title">🛒 IndiaMART Buy Leads</div><div class="slink-desc">Check today's live buyer requests for spices.</div><div class="slink-url">indiamart.com →</div></a>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Commodity Price Tracker — All 9 Commodities</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Commodity</th><th>Origin / Mandi</th><th>Grade</th>
+          <th>Min ₹/Qtl (API)</th><th>Modal ₹/Qtl (API)</th><th>Max ₹/Qtl (API)</th>
+          <th>Your Buy ₹/kg</th><th>Sell Target ₹/kg</th><th>Margin</th>
+          <th>Trend</th><th>Last Updated</th>
+        </tr>
+      </thead>
+      <tbody id="price-tbody"></tbody>
+    </table>
+    <div style="margin-top:.6rem;font-size:.58rem;color:var(--muted)">
+      ℹ API columns auto-fill when key is saved. "Your Buy" &amp; "Sell Target" columns are always manually editable. Press Enter to save.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ DEMAND RADAR ══════════════════ -->
+<div class="panel" id="panel-demand">
+  <div class="section-header">◉ Demand Radar — City × Commodity</div>
+  <div class="section-sub">Seasonal intelligence for current month based on APMC consumption patterns, festival calendar, and HORECA procurement cycles. Updates automatically each month.</div>
+
+  <div class="legend">
+    <div class="litem"><div class="ldot" style="background:#1C160E;border:1px solid #3a3020"></div>None</div>
+    <div class="litem"><div class="ldot" style="background:#2d1f0a"></div>Low</div>
+    <div class="litem"><div class="ldot" style="background:#4a2e08"></div>Moderate</div>
+    <div class="litem"><div class="ldot" style="background:#6b3a0a"></div>Good</div>
+    <div class="litem"><div class="ldot" style="background:#8B4A0C"></div>High</div>
+    <div class="litem"><div class="ldot" style="background:#C0392B"></div>🔥 Peak</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">City × Spice Demand Matrix — <span id="dm-month"></span></div>
+    <div class="heatmap-wrap"><div class="heatmap-grid" id="demand-heatmap"></div></div>
+    <div style="margin-top:.6rem;font-size:.58rem;color:var(--muted)">Hover any cell for demand context. Values are seasonal intelligence — not live transactional data.</div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🏙 City Buyer Profiles</div>
+      <table>
+        <thead><tr><th>City</th><th>Primary Buyers</th><th>Top Spices</th><th>Peak Months</th></tr></thead>
+        <tbody>
+          <tr><td>Mumbai</td><td>HORECA, FMCG, Export</td><td>Byadgi, Turmeric</td><td>Oct–Feb, Jun</td></tr>
+          <tr><td>Delhi/NCR</td><td>Mandis, Retail Chains</td><td>Chilli, Pepper, Ginger</td><td>Sep–Nov, Mar–Apr</td></tr>
+          <tr><td>Chennai</td><td>HORECA, Masala units</td><td>Turmeric, Chilli, Pepper</td><td>Dec–Jan, year-round</td></tr>
+          <tr><td>Kolkata</td><td>HORECA, Fish curry industry</td><td>Turmeric, Ginger, Chilli</td><td>Oct–Dec, Mar</td></tr>
+          <tr><td>Hyderabad</td><td>Masala mfrs, HORECA</td><td>Byadgi Chilli, Turmeric</td><td>Sep–Feb</td></tr>
+          <tr><td>Bengaluru</td><td>HORECA, Packaged food</td><td>All varieties</td><td>Oct–Jan</td></tr>
+          <tr><td>Ahmedabad</td><td>Namkeen industry, FMCG</td><td>Chilli, Turmeric</td><td>Oct–Feb</td></tr>
+          <tr><td>Pune</td><td>Food processing, HORECA</td><td>Byadgi, Turmeric</td><td>Sep–Dec</td></tr>
+          <tr><td>Kochi</td><td>Exporters, HORECA</td><td>Pepper, Cardamom</td><td>Year-round</td></tr>
+          <tr><td>Coimbatore</td><td>Rice mills, Masala units</td><td>Pepper, Ginger, Turmeric</td><td>Dec–Feb</td></tr>
+          <tr><td>Surat</td><td>Textile canteens, HORECA</td><td>Chilli, Turmeric</td><td>Nov–Jan</td></tr>
+          <tr><td>Jaipur</td><td>Curry powder units, Retail</td><td>Chilli, Turmeric</td><td>Sep–Nov, Feb–Mar</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">📅 Festival Demand Spikes</div>
+      <table>
+        <thead><tr><th>Festival</th><th>Month</th><th>Cities</th><th>Spike</th></tr></thead>
+        <tbody>
+          <tr><td>Diwali</td><td>Oct–Nov</td><td>Delhi, Ahmedabad, Mumbai</td><td>All spices +30–50%</td></tr>
+          <tr><td>Navratri</td><td>Oct</td><td>Gujarat, Rajasthan</td><td>Chilli, Turmeric +25%</td></tr>
+          <tr><td>Pongal / Sankranti</td><td>January</td><td>Chennai, Hyderabad, Bengaluru</td><td>Turmeric +40%</td></tr>
+          <tr><td>Durga Puja</td><td>October</td><td>Kolkata, East India</td><td>Turmeric, Ginger +35%</td></tr>
+          <tr><td>Christmas / NYE</td><td>Dec–Jan</td><td>Goa, Kerala, Mumbai</td><td>Pepper, Ginger +20%</td></tr>
+          <tr><td>Hotel Q4 Procurement</td><td>Sep–Nov</td><td>All metros</td><td>All spices — annual bulk</td></tr>
+          <tr><td>Biryani Season</td><td>Mar–Jun</td><td>Hyderabad, Bengaluru</td><td>Byadgi Chilli +30%</td></tr>
+          <tr><td>Wedding Season</td><td>Nov–Feb, May</td><td>Delhi, Mumbai, Jaipur</td><td>All + Cashews +40%</td></tr>
+          <tr><td>Onam</td><td>Aug–Sep</td><td>Kerala, Kochi</td><td>Pepper, Ginger, Rice</td></tr>
+          <tr><td>Ramadan / Eid</td><td>Variable</td><td>Hyderabad, Mumbai, Delhi</td><td>Chilli, Pepper blends</td></tr>
+          <tr><td>Pickle Season</td><td>Mar–May</td><td>Andhra, Telangana, Karnataka</td><td>Chilli, Turmeric, Ginger</td></tr>
+          <tr><td>Institutional Tenders</td><td>Apr–Jun</td><td>All cities</td><td>Turmeric, Chilli annual</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ SEASONS ══════════════════ -->
+<div class="panel" id="panel-seasons">
+  <div class="section-header">◈ Peak Season Intelligence Calendar</div>
+  <div class="section-sub">Procurement windows, harvest cycles, and buying peaks for all 9 commodities. Current month highlighted.</div>
+
+  <div class="legend" style="margin-bottom:1rem">
+    <div class="litem"><div class="ldot s-harv"></div>Harvest / New Arrival</div>
+    <div class="litem"><div class="ldot s-peak"></div>Peak Buying Demand</div>
+    <div class="litem"><div class="ldot s-mid"></div>Good Demand</div>
+    <div class="litem"><div class="ldot s-low"></div>Low / Steady</div>
+    <div class="litem"><div class="ldot s-off"></div>Off Season</div>
+  </div>
+
+  <div class="card" style="overflow-x:auto">
+    <div class="card-title">Annual Calendar — All Commodities</div>
+    <div id="season-cal" style="min-width:500px"></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🌶 Byadgi Chilli Supply Chain</div>
+      <table>
+        <thead><tr><th>Parameter</th><th>Details</th></tr></thead>
+        <tbody>
+          <tr><td>Main Harvest</td><td>November – February</td></tr>
+          <tr><td>Summer Crop</td><td>June – August</td></tr>
+          <tr><td>New Arrivals at APMC</td><td>November onwards — Byadgi &amp; Haveri</td></tr>
+          <tr><td>Best Buy Window</td><td>December – March (peak quality + lowest price)</td></tr>
+          <tr><td>Off Season</td><td>May – October (old stock, 20–40% higher price)</td></tr>
+          <tr><td>Colour Standard</td><td>ASTA 60+ export / ASTA 40+ domestic FMCG</td></tr>
+          <tr><td>Price Trend</td><td>Lowest at harvest (Dec), rises through Aug</td></tr>
+          <tr><td>FMCG Buying Window</td><td>October – December for Diwali season</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">🗺 State-wise Procurement Windows</div>
+      <table>
+        <thead><tr><th>State</th><th>Commodity</th><th>Best Month</th><th>Key APMC</th></tr></thead>
+        <tbody>
+          <tr><td>Karnataka</td><td>Byadgi Chilli</td><td>Dec–Feb</td><td>Byadgi, Haveri, Hubli</td></tr>
+          <tr><td>Wayanad, Kerala</td><td>Black Pepper</td><td>Nov–Jan</td><td>Kalpetta, Mananthavady</td></tr>
+          <tr><td>Kochi, Kerala</td><td>White Pepper</td><td>Nov–Feb</td><td>Kochi Pepper Exchange</td></tr>
+          <tr><td>Erode, Tamil Nadu</td><td>Turmeric</td><td>Feb–Apr</td><td>Erode APMC (Asia's largest)</td></tr>
+          <tr><td>Salem, Tamil Nadu</td><td>Turmeric, Dry Ginger</td><td>Mar–May</td><td>Salem APMC</td></tr>
+          <tr><td>Guntur, Andhra</td><td>Chilli (alternate)</td><td>Jan–Mar</td><td>Guntur APMC</td></tr>
+          <tr><td>Kollam, Kerala</td><td>Cashew W320</td><td>Mar–May</td><td>Kollam Processing Hub</td></tr>
+          <tr><td>Mangalore, Karnataka</td><td>Cashew Raw/Processed</td><td>Mar–May</td><td>Mangalore Port Area</td></tr>
+          <tr><td>Kurnool, Andhra</td><td>Sona Masoori Rice</td><td>Oct–Dec</td><td>Kurnool APMC</td></tr>
+          <tr><td>Karnal, Haryana</td><td>Basmati Rice</td><td>Oct–Dec</td><td>Karnal APMC</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ BUYERS ══════════════════ -->
+<div class="panel" id="panel-buyers">
+  <div class="section-header">▣ Buyer Intelligence Directory</div>
+  <div class="section-sub">54 verified large buyers — FMCG brands, hotel chains, mandi wholesalers, exporters, industrial buyers. Your primary outreach targets.</div>
+
+  <div class="sbar">
+    <input class="sinput" id="buyer-search" placeholder="Search name, city, commodity..." oninput="filterBuyers()">
+    <button class="fbtn on" onclick="setBuyerFilter('all',this)">All</button>
+    <button class="fbtn" onclick="setBuyerFilter('fmcg',this)">FMCG</button>
+    <button class="fbtn" onclick="setBuyerFilter('hotel',this)">Hotels</button>
+    <button class="fbtn" onclick="setBuyerFilter('mandi',this)">Mandi</button>
+    <button class="fbtn" onclick="setBuyerFilter('export',this)">Export</button>
+    <button class="fbtn" onclick="setBuyerFilter('industrial',this)">Industrial</button>
+  </div>
+  <div class="cards-grid" id="buyer-grid"></div>
+</div>
+
+<!-- ══════════════════ SUPPLIERS ══════════════════ -->
+<div class="panel" id="panel-suppliers">
+  <div class="section-header">◆ Supplier Network — Karnataka · Kerala · Tamil Nadu · Andhra</div>
+  <div class="section-sub">Your procurement origins. Build direct relationships with these sources. Asset-light model: you connect these suppliers to buyers.</div>
+
+  <div class="sbar">
+    <input class="sinput" id="supp-search" placeholder="Search location, commodity..." oninput="filterSuppliers()">
+    <button class="fbtn on" onclick="setSuppFilter('all',this)">All States</button>
+    <button class="fbtn" onclick="setSuppFilter('Karnataka',this)">Karnataka</button>
+    <button class="fbtn" onclick="setSuppFilter('Kerala',this)">Kerala</button>
+    <button class="fbtn" onclick="setSuppFilter('Tamil Nadu',this)">Tamil Nadu</button>
+    <button class="fbtn" onclick="setSuppFilter('Andhra Pradesh',this)">Andhra</button>
+  </div>
+  <div class="cards-grid" id="supp-grid"></div>
+</div>
+
+<!-- ══════════════════ PIPELINE ══════════════════ -->
+<div class="panel" id="panel-pipeline">
+  <div class="section-header">⟳ Deal Pipeline</div>
+  <div class="section-sub">Log every inquiry and deal. Your proprietary intelligence grows with every entry.</div>
+
+  <div class="card">
+    <div class="card-title">+ Log New Lead</div>
+    <div class="pipe-form">
+      <div class="fg"><label class="flabel">Buyer / Company</label><input class="finput" id="p-buyer" placeholder="e.g. MTR Foods"></div>
+      <div class="fg"><label class="flabel">City</label><input class="finput" id="p-city" placeholder="e.g. Bengaluru"></div>
+      <div class="fg"><label class="flabel">Commodity</label>
+        <select class="fselect" id="p-comm">
+          <option value="">Select...</option>
+          <option>Byadgi Chilli</option><option>Chilli Powder</option>
+          <option>Black Pepper</option><option>White Pepper</option>
+          <option>Turmeric</option><option>Dry Ginger</option>
+          <option>Cashews</option><option>Rice</option><option>Mixed Spices</option>
+        </select>
+      </div>
+      <div class="fg"><label class="flabel">Quantity</label><input class="finput" id="p-qty" placeholder="e.g. 500 kg/mo"></div>
+      <div class="fg"><label class="flabel">Status</label>
+        <select class="fselect" id="p-status">
+          <option value="new">New Lead</option>
+          <option value="follow">Follow-up</option>
+          <option value="neg">Negotiating</option>
+          <option value="closed">Closed ✓</option>
+          <option value="lost">Lost</option>
+        </select>
+      </div>
+      <div class="fg"><label class="flabel">Source</label>
+        <select class="fselect" id="p-src">
+          <option>IndiaMART</option><option>WhatsApp</option>
+          <option>Direct Call</option><option>Referral</option>
+          <option>Mandi Agent</option><option>Exhibition</option><option>Other</option>
+        </select>
+      </div>
+      <button class="btn-add" onclick="addDeal()">+ ADD</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Active Pipeline</div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Date</th><th>Buyer</th><th>City</th><th>Commodity</th><th>Qty</th><th>Status</th><th>Source</th><th>Notes</th><th>Update</th></tr>
+        </thead>
+        <tbody id="pipe-tbody">
+          <tr><td colspan="10" style="text-align:center;color:var(--muted);padding:2rem;font-size:.68rem">No deals yet. Add your first lead above.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ DAILY INTEL ══════════════════ -->
+<div class="panel" id="panel-intel">
+  <div class="section-header">◎ Daily Intel Feed</div>
+  <div class="section-sub">Where to look today. Market signals, seasonal triggers, outreach intelligence — updated every month automatically.</div>
+
+  <div class="grid-2">
+    <div>
+      <div class="card">
+        <div class="card-title">🔴 High Priority</div>
+        <div id="intel-hi"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🟡 Market Opportunities</div>
+        <div id="intel-med"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title">🟢 Background Intelligence</div>
+        <div id="intel-lo"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">⏰ Daily Outreach Checklist</div>
+        <div id="checklist"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔍 Where to Find Live Buyers — Daily Sources</div>
+    <table>
+      <thead><tr><th>Platform</th><th>Search Query</th><th>What to Look For</th><th>Freq</th><th>Link</th></tr></thead>
+      <tbody>
+        <tr><td>IndiaMART Buy Leads</td><td>"Byadgi chilli" "chilli powder" "black pepper bulk"</td><td>Qty &gt;100kg, phone visible</td><td>Daily 9AM</td><td><a href="https://www.indiamart.com/buyleads/" target="_blank" style="color:var(--saffron)">Open →</a></td></tr>
+        <tr><td>TradeIndia Requirements</td><td>"Spice powder wholesale" "dry ginger bulk"</td><td>Verified buyer badge, large qty</td><td>Daily</td><td><a href="https://www.tradeindia.com/buy-requirements/" target="_blank" style="color:var(--saffron)">Open →</a></td></tr>
+        <tr><td>e-NAM Trade Data</td><td>Karnataka, Kerala mandis</td><td>Low arrival = supply gap = opportunity</td><td>Daily</td><td><a href="https://enam.gov.in/web/dashboard/trade-data" target="_blank" style="color:var(--saffron)">Open →</a></td></tr>
+        <tr><td>Agmarknet Arrivals</td><td>City-wise daily arrivals report</td><td>Cities with low arrivals need supply</td><td>Daily</td><td><a href="https://agmarknet.gov.in" target="_blank" style="color:var(--saffron)">Open →</a></td></tr>
+        <tr><td>LinkedIn</td><td>"Spice procurement manager" "purchase officer FMCG India"</td><td>Decision makers at food companies</td><td>Weekly</td><td><a href="https://www.linkedin.com/search/results/people/" target="_blank" style="color:var(--saffron)">Open →</a></td></tr>
+        <tr><td>Export Genius / Zauba</td><td>HS Code 09042290 (chilli powder)</td><td>Regular importers &amp; exporters</td><td>Weekly</td><td><a href="https://www.exportgenius.in" target="_blank" style="color:var(--saffron)">Open →</a></td></tr>
+        <tr><td>APEDA Directory</td><td>Spice exporters by region</td><td>Export-licensed buyers needing supply</td><td>Monthly</td><td><a href="https://www.apeda.gov.in" target="_blank" style="color:var(--saffron)">Open →</a></td></tr>
+        <tr><td>WhatsApp Mandi Groups</td><td>Join Byadgi, Haveri, Wayanad, Erode groups</td><td>Bulk buyers posting requirements live</td><td>Real-time</td><td style="color:var(--muted)">Via contacts</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="noteModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title">Add / Edit Note</div>
+    <div id="modal-ctx" style="font-size:.62rem;color:var(--muted);margin-bottom:.3rem"></div>
+    <textarea id="modal-note" placeholder="Last call date, follow-up notes, price discussed..."></textarea>
+    <div style="display:flex;gap:.5rem;margin-top:.7rem">
+      <button class="btn-add" onclick="saveNote()" style="flex:1">Save Note</button>
+      <button onclick="closeModal()" style="background:transparent;border:1px solid var(--muted);color:var(--muted);padding:.38rem .9rem;cursor:pointer;border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:.65rem">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  CONSTANTS & STATE
+// ═══════════════════════════════════════════════════
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const NOW = new Date();
+const CM = NOW.getMonth(); // current month index
+
+// Commodities & short labels
+const COMMS = ['Byadgi Chilli','Chilli Powder','Black Pepper','White Pepper','Turmeric','Dry Ginger','Cashews W320','Rice Sona','Rice Basmati'];
+const CSHORT = ['Chilli','Chilli Pwd','Blk Pepper','Wht Pepper','Turmeric','Dry Ginger','Cashew','Sona Rice','Basmati'];
+
+// API resource IDs on data.gov.in (mandi price dataset)
+const API_RESOURCE = '9ef84268-d588-465a-a308-a864a43d0070';
+
+// Commodity names as they appear in the govt API (case-sensitive search)
+const API_COMMODITY_NAMES = [
+  'Dry Chillies', 'Chilly (Dry)', 'Pepper', 'Pepper', 'Turmeric', 'Ginger(Dry)', 'Cashewnuts', 'Rice', 'Rice(Basmati)'
+];
+
+// Key mandis to fetch for each commodity
+const API_MANDIS = [
+  'Byadagi', 'Hubli', 'Kochi', 'Kochi', 'Erode', 'Wayanad', 'Kollam', 'Kurnool', 'Karnal'
+];
+
+// Cities for heatmap
+const CITIES = ['Mumbai','Delhi','Chennai','Kolkata','Hyderabad','Bengaluru','Ahmedabad','Pune','Kochi','Coimbatore','Surat','Jaipur'];
+
+// Base demand matrix [commodity][city] 0-5
+const BASE_DEMAND = [
+  [5,4,4,3,5,5,3,4,2,3,3,3], // Byadgi Chilli
+  [5,4,4,3,5,4,4,4,2,3,3,3], // Chilli Powder
+  [4,3,5,4,4,4,3,3,5,5,2,3], // Black Pepper
+  [3,2,4,3,3,3,2,2,5,4,1,2], // White Pepper
+  [4,4,5,5,4,4,3,4,3,5,3,4], // Turmeric
+  [4,3,4,5,3,4,3,3,4,4,2,3], // Dry Ginger
+  [5,5,3,4,3,4,4,4,3,2,3,4], // Cashews
+  [4,3,5,4,4,5,3,4,4,4,3,2], // Sona Rice
+  [5,4,3,3,3,4,3,4,2,2,3,5], // Basmati
+];
+
+// Monthly multiplier per city (12 months)
+const MONTH_MULT = [
+  [1.2,1.1,1.3,1.2,1.1,1.1,1.0,1.1,1.0,1.2,1.0,1.0], // Jan
+  [1.0,1.0,1.1,1.0,1.0,1.0,0.9,1.0,0.9,1.1,0.9,0.9], // Feb
+  [1.0,1.0,1.0,1.0,1.0,1.0,0.9,1.0,1.1,1.0,0.9,0.9], // Mar
+  [0.9,0.9,1.0,1.0,0.9,0.9,0.9,0.9,1.0,1.0,0.8,0.9], // Apr
+  [0.8,0.8,0.9,0.9,0.8,0.8,0.8,0.8,0.9,0.9,0.8,0.8], // May
+  [0.9,0.8,0.9,0.9,0.9,0.9,0.8,0.8,1.0,0.9,0.8,0.8], // Jun
+  [0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.9,0.9,0.8,0.8], // Jul
+  [0.9,0.9,0.9,1.0,0.9,0.9,0.9,0.9,1.0,1.0,0.9,0.9], // Aug
+  [1.1,1.0,1.1,1.1,1.0,1.0,1.0,1.0,1.1,1.1,1.0,1.0], // Sep
+  [1.3,1.2,1.2,1.3,1.2,1.2,1.3,1.2,1.1,1.2,1.2,1.2], // Oct
+  [1.4,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.1,1.2,1.2,1.2], // Nov
+  [1.3,1.2,1.3,1.3,1.2,1.2,1.2,1.2,1.0,1.1,1.2,1.2], // Dec
+];
+
+function getDemand(ci, cityI) {
+  return Math.min(5, Math.round(BASE_DEMAND[ci][cityI] * MONTH_MULT[CM][cityI]));
+}
+
+// ═══════════════════════════════════════════════════
+//  PRICE DATA (local state)
+// ═══════════════════════════════════════════════════
+const PRICE_META = [
+  {comm:'Byadgi Chilli (Whole)',    origin:'Byadgi / Haveri, Karnataka', grade:'Medium / A Grade',     trend:'↑'},
+  {comm:'Byadgi Chilli Powder',     origin:'Byadgi, Karnataka',          grade:'ASTA 40+',             trend:'↑'},
+  {comm:'Black Pepper',             origin:'Wayanad, Kerala',            grade:'MG1 Ungarbled',        trend:'→'},
+  {comm:'White Pepper',             origin:'Kochi, Kerala',              grade:'ASTA Grade',           trend:'→'},
+  {comm:'Turmeric (Finger)',         origin:'Erode, Tamil Nadu',          grade:'Salem / Erode Grade',  trend:'↑'},
+  {comm:'Dry Ginger',               origin:'Wayanad / Salem',            grade:'Kerala Dry Grade',     trend:'→'},
+  {comm:'Cashews W320',             origin:'Kollam / Mangalore',         grade:'W320 Processed',       trend:'↑'},
+  {comm:'Rice — Sona Masoori',      origin:'Kurnool, Andhra Pradesh',    grade:'Raw / Boiled',         trend:'→'},
+  {comm:'Rice — Basmati 1121',      origin:'Karnal, Haryana',            grade:'Steam / Raw',          trend:'↑'},
+];
+
+function getPrices() { return JSON.parse(localStorage.getItem('prices_v2') || '{}'); }
+function savePrices(p) { localStorage.setItem('prices_v2', JSON.stringify(p)); }
+
+// ═══════════════════════════════════════════════════
+//  API KEY
+// ═══════════════════════════════════════════════════
+function getApiKey() { return localStorage.getItem('dgi_api_key') || ''; }
+
+function saveApiKey() {
+  const k = document.getElementById('api-key-input').value.trim();
+  if (!k) { alert('Please paste your API key first.'); return; }
+  localStorage.setItem('dgi_api_key', k);
+  document.getElementById('api-banner').classList.add('hidden');
+  fetchAllPrices();
+}
+
+function initApiBanner() {
+  const k = getApiKey();
+  if (k) {
+    document.getElementById('api-key-input').value = k;
+    document.getElementById('api-banner').classList.add('hidden');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  LIVE PRICE FETCH — data.gov.in
+// ═══════════════════════════════════════════════════
+function setStatus(dot, text) {
+  document.getElementById('sdot').className = 'status-dot ' + dot;
+  document.getElementById('stext').textContent = text;
+}
+
+async function fetchAllPrices() {
+  const key = getApiKey();
+  if (!key) {
+    document.getElementById('api-banner').classList.remove('hidden');
+    setStatus('dot-red', 'No API key. Enter your data.gov.in key above.');
+    return;
+  }
+  setStatus('dot-yellow', 'Fetching live mandi prices from data.gov.in…');
+  document.getElementById('refresh-btn').disabled = true;
+
+  const prices = getPrices();
+  let fetched = 0;
+
+  // Commodities that can be fetched from API (0,2,4,5,7,8 = Chilli,Pepper,Turmeric,Ginger,Rice,Rice)
+  const fetchable = [0, 2, 4, 5, 7, 8];
+
+  const promises = fetchable.map(async (ci) => {
+    try {
+      const commName = API_COMMODITY_NAMES[ci];
+      const url = `https://api.data.gov.in/resource/${API_RESOURCE}?api-key=${key}&format=json&limit=10&filters[commodity]=${encodeURIComponent(commName)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const records = data.records || [];
+      if (records.length > 0) {
+        // Pick most recent / most relevant record
+        const r = records[0];
+        if (!prices[ci]) prices[ci] = {};
+        prices[ci].min_api   = r.min_price  || r.minimum_price  || '—';
+        prices[ci].modal_api = r.modal_price || r.modal          || '—';
+        prices[ci].max_api   = r.max_price  || r.maximum_price  || '—';
+        prices[ci].mandi_api = r.market     || r.market_name    || '';
+        prices[ci].date      = r.arrival_date || new Date().toLocaleDateString('en-IN');
+        fetched++;
+      }
+    } catch(e) {
+      console.warn('Price fetch failed for index', ci, e.message);
+    }
+  });
+
+  await Promise.all(promises);
+  savePrices(prices);
+  renderPrices();
+  document.getElementById('refresh-btn').disabled = false;
+  document.getElementById('k-priceup').textContent = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+
+  if (fetched > 0) {
+    setStatus('dot-green', `✓ Fetched live prices for ${fetched} commodities from data.gov.in  (${new Date().toLocaleString('en-IN')})`);
+  } else {
+    setStatus('dot-red', 'Fetch returned no data. Check your API key or try again. Manual entry still works below.');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER PRICE TABLE
+// ═══════════════════════════════════════════════════
+function renderPrices() {
+  const prices = getPrices();
+  let html = '';
+  PRICE_META.forEach((m, i) => {
+    const p = prices[i] || {};
+    const margin = (p.buy && p.sell) ? '₹' + (parseFloat(p.sell) - parseFloat(p.buy)).toFixed(0) + '/kg' : '—';
+    const tc = m.trend === '↑' ? 'var(--success)' : m.trend === '↓' ? 'var(--danger)' : 'var(--muted)';
+    html += `<tr>
+      <td style="color:var(--turmeric);font-weight:500">${m.comm}</td>
+      <td style="color:var(--muted);font-size:.6rem">${m.origin}</td>
+      <td style="color:var(--muted);font-size:.6rem">${m.grade}</td>
+      <td style="color:#60a880;font-size:.65rem">${p.min_api || '—'}</td>
+      <td style="color:var(--cream);font-size:.65rem;font-weight:500">${p.modal_api || '—'}</td>
+      <td style="color:#a06040;font-size:.65rem">${p.max_api || '—'}</td>
+      <td><input class="price-cell" value="${p.buy||''}" placeholder="₹/kg" onchange="saveManual(${i},'buy',this.value)" onkeydown="if(event.key==='Enter')this.blur()"></td>
+      <td><input class="price-cell" value="${p.sell||''}" placeholder="₹/kg" onchange="saveManual(${i},'sell',this.value)" onkeydown="if(event.key==='Enter')this.blur()"></td>
+      <td style="color:${margin==='—'?'var(--muted)':'var(--success)'};font-size:.65rem">${margin}</td>
+      <td style="color:${tc}">${m.trend}</td>
+      <td style="color:var(--muted);font-size:.58rem">${p.date||'—'}</td>
+    </tr>`;
+  });
+  document.getElementById('price-tbody').innerHTML = html;
+}
+
+function saveManual(i, field, val) {
+  const prices = getPrices();
+  if (!prices[i]) prices[i] = {};
+  prices[i][field] = val;
+  prices[i].date = new Date().toLocaleDateString('en-IN');
+  savePrices(prices);
+  renderPrices();
+}
+
+// ═══════════════════════════════════════════════════
+//  HEATMAP
+// ═══════════════════════════════════════════════════
+const DL = ['—','Low','Mod','Good','High','🔥'];
+
+function renderHeatmap(containerId, cols) {
+  const numComms = cols || 9;
+  const shortLabels = CSHORT.slice(0, numComms);
+  let html = `<div class="hm-header" style="text-align:left;padding-left:.5rem">City↓ / Spice→</div>`;
+  shortLabels.forEach(s => { html += `<div class="hm-header">${s}</div>`; });
+
+  CITIES.forEach((city, ci) => {
+    html += `<div class="hm-city">${city}</div>`;
+    for (let oi = 0; oi < numComms; oi++) {
+      const d = getDemand(oi, ci);
+      html += `<div class="hm-cell h${d}" title="${COMMS[oi]} in ${city}: ${DL[d]}">${DL[d]}</div>`;
+    }
+  });
+
+  const el = document.getElementById(containerId);
+  el.style.gridTemplateColumns = `110px repeat(${numComms},1fr)`;
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+//  SEASON CALENDAR
+// ═══════════════════════════════════════════════════
+const SEASON_DATA = [
+  {name:'Byadgi Chilli',    sub:'Byadgi, Karnataka', d:['harv','harv','peak','peak','mid','low','low','low','mid','peak','harv','harv']},
+  {name:'Chilli Powder',    sub:'All India',         d:['peak','peak','peak','mid','mid','low','low','low','mid','peak','peak','peak']},
+  {name:'Black Pepper',     sub:'Wayanad, Kerala',   d:['peak','mid','mid','low','low','low','low','low','mid','mid','harv','harv']},
+  {name:'White Pepper',     sub:'Kochi Exchange',    d:['peak','peak','mid','low','low','low','low','low','low','mid','harv','harv']},
+  {name:'Turmeric',         sub:'Erode, Tamil Nadu', d:['peak','peak','harv','harv','mid','low','low','low','low','mid','peak','peak']},
+  {name:'Dry Ginger',       sub:'Wayanad / Salem',   d:['peak','peak','mid','harv','harv','mid','low','low','low','mid','peak','peak']},
+  {name:'Cashews W320',     sub:'Kollam / Mangalore',d:['mid','mid','harv','harv','peak','mid','low','low','low','mid','mid','mid']},
+  {name:'Rice Sona Masoori',sub:'Kurnool, AP',       d:['mid','mid','mid','low','low','low','low','mid','peak','harv','harv','peak']},
+  {name:'Rice Basmati',     sub:'Karnal, Haryana',   d:['mid','mid','low','low','low','low','low','low','peak','harv','harv','peak']},
+];
+const SC = {harv:'s-harv',peak:'s-peak',mid:'s-mid',low:'s-low',off:'s-off'};
+const SL = {harv:'HVS',peak:'PEAK',mid:'MID',low:'LOW',off:'—'};
+
+function renderSeasonCal() {
+  // Month headers
+  let html = '<div class="season-row"><div class="season-label" style="color:var(--muted);font-size:.56rem">COMMODITY</div><div class="season-months">';
+  MONTHS.forEach((m,i) => {
+    html += `<div class="mcell" style="background:${i===CM?'var(--saffron)':'#13100a'};color:${i===CM?'var(--ink)':'var(--muted)'};font-weight:${i===CM?700:400}">${m}</div>`;
+  });
+  html += '</div></div>';
+
+  SEASON_DATA.forEach(row => {
+    html += `<div class="season-row">
+      <div class="season-label">${row.name}<br><span class="season-sublabel">${row.sub}</span></div>
+      <div class="season-months">`;
+    row.d.forEach((s,mi) => {
+      html += `<div class="mcell ${SC[s]}" style="${mi===CM?'outline:2px solid var(--saffron);outline-offset:1px':''}" title="${row.name}: ${MONTHS[mi]} = ${s.toUpperCase()}">${SL[s]}</div>`;
+    });
+    html += '</div></div>';
+  });
+  document.getElementById('season-cal').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+//  OVERVIEW
+// ═══════════════════════════════════════════════════
+const MONTH_INTEL = [
+  {title:'Pongal & Wedding Season Surge', body:'Chennai, Hyderabad, Bengaluru in peak procurement. Turmeric up 40%. Call HORECA buyers immediately.'},
+  {title:'Post-Harvest Window — Lock Prices Now', body:'Byadgi APMC new chilli at season lows. Erode turmeric harvest arriving. Fix supplier prices for next 6 months.'},
+  {title:'Wedding Season + Holi Prep', body:'Delhi, Jaipur, Ahmedabad ramping. Gujarati snack industry buying chilli powder heavily. Call FMCG buyers.'},
+  {title:'Summer Pickle Season Opening', body:'Andhra Pradesh, Telangana: massive chilli demand for mango pickle season. Push Hyderabad masala manufacturers.'},
+  {title:'Institutional Tender Season', body:'Canteen tenders open (schools, corporates, hospitals). Push cashews to Mumbai/Delhi. Rice procurement active.'},
+  {title:'Biryani Season + Monsoon', body:'Hyderabad, Bengaluru, Mumbai HORECA in active biryani procurement. Byadgi chilli + pepper demand high.'},
+  {title:'Monsoon — Steady Demand', body:'Lower volumes but institutional buying continues. Good month to visit Wayanad/Byadgi for fresh season contracts.'},
+  {title:'Onam Prep + Festive Ramp-Up', body:'Kerala in Onam procurement. Pepper, ginger, rice rising. All metros beginning pre-festive stocking.'},
+  {title:'Pre-Diwali — Major Buying Window Opens', body:'Delhi wholesale mandis active. Gujarat FMCG buying aggressively. Hotels placing Q4 annual orders.'},
+  {title:'🔥 PEAK SEASON — Maximum Demand', body:'Navratri + Diwali = highest demand all year. All commodities. Have supply locked. Push all buyer contacts.'},
+  {title:'Post-Diwali Sustained Demand', body:'Wedding season begins. FMCG annual procurement continues. Byadgi new season arriving — lock early contracts.'},
+  {title:'New Byadgi Season — Best Buy Window', body:'Fresh chilli arriving at APMC at season lows. Christmas HORECA demand rising for pepper & ginger.'},
+];
+
+function renderOverview() {
+  document.getElementById('today-date').textContent = NOW.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('snap-month').textContent = MONTHS_FULL[CM] + ' ' + NOW.getFullYear();
+  document.getElementById('dm-month').textContent = MONTHS_FULL[CM] + ' ' + NOW.getFullYear();
+
+  // Action items
+  const intel = MONTH_INTEL[CM];
+  document.getElementById('ov-actions').innerHTML = `
+    <div class="intel-item med">
+      <div class="intel-hd"><span class="itag">Seasonal Alert</span><span class="itime">${MONTHS_FULL[CM]}</span></div>
+      <div class="ititle">${intel.title}</div>
+      <div class="ibody">${intel.body}</div>
+    </div>
+    <div class="intel-item hi">
+      <div class="intel-hd"><span class="itag">Priority</span><span class="itime">Morning</span></div>
+      <div class="ititle">Update mandi prices &amp; check IndiaMART leads</div>
+      <div class="ibody">→ Live Prices tab: click Refresh to auto-fetch from data.gov.in<br>→ IndiaMART: search "Byadgi chilli" in Buy Leads section</div>
+    </div>
+    <div class="intel-item lo">
+      <div class="intel-hd"><span class="itag">Outreach</span><span class="itime">Daily</span></div>
+      <div class="ititle">Make 3 buyer calls — focus on this month's peak cities</div>
+      <div class="ibody">See Buyers tab → filter by city/type → log each call in Pipeline</div>
+    </div>`;
+
+  // Top demand cities
+  let cityScores = CITIES.map((city,ci) => {
+    let s = 0; for(let oi=0;oi<9;oi++) s += getDemand(oi,ci);
+    return {city,s,ci};
+  }).sort((a,b)=>b.s-a.s);
+  document.getElementById('k-peak').textContent = cityScores[0].city;
+
+  let citHtml = '';
+  cityScores.slice(0,6).forEach((item,idx) => {
+    const pct = Math.round(item.s/45*100);
+    const col = idx===0?'var(--chilli)':idx<=1?'var(--saffron)':'var(--cardamom)';
+    citHtml += `<div style="margin-bottom:.6rem">
+      <div style="display:flex;justify-content:space-between;margin-bottom:.15rem">
+        <span style="font-size:.65rem;color:var(--cream)">${idx+1}. ${item.city}</span>
+        <span style="font-size:.58rem;color:var(--muted)">Score ${item.s}/45</span>
+      </div>
+      <div style="background:var(--surface2);height:5px;border-radius:2px">
+        <div style="background:${col};height:100%;width:${pct}%;border-radius:2px"></div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('ov-cities').innerHTML = citHtml;
+
+  // Hot commodity
+  let maxS=0,hotC='';
+  for(let ci=0;ci<9;ci++){
+    let s=0; CITIES.forEach((_,cityI)=>s+=getDemand(ci,cityI));
+    if(s>maxS){maxS=s;hotC=CSHORT[ci];}
+  }
+  document.getElementById('k-hot').textContent = hotC;
+}
+
+// ═══════════════════════════════════════════════════
+//  BUYERS
+// ═══════════════════════════════════════════════════
+const BUYERS = [
+  {name:'MTR Foods Pvt Ltd',type:'fmcg',city:'Bengaluru',state:'Karnataka',spices:['Byadgi Chilli','Turmeric','Pepper','Dry Ginger'],vol:'50–200 tons/yr',note:'Leading South Indian RTC brand. Procurement via vendor registration.',contact:'procurement@mtrfoods.com'},
+  {name:'Everest Masala',type:'fmcg',city:'Mumbai',state:'Maharashtra',spices:['Chilli Powder','Turmeric','Pepper'],vol:'500+ tons/yr',note:"India's largest spice brand. Annual tender for raw spice supply.",contact:'everestspices.com → Vendor'},
+  {name:'MDH Masala',type:'fmcg',city:'Delhi',state:'Delhi',spices:['Chilli Powder','Turmeric','Dry Ginger'],vol:'300+ tons/yr',note:'North India dominant. Buys Byadgi for colour. High ASTA standards.',contact:'Direct approach to purchase manager'},
+  {name:'ITC Kitchens of India',type:'fmcg',city:'Kolkata/Delhi',state:'Multiple',spices:['All Spices','Cashews'],vol:'Large annual',note:'ITC Agri sources directly. High volume, reliable payer.',contact:'ITC Agri Business Division'},
+  {name:'Catch Spices (DS Group)',type:'fmcg',city:'Noida',state:'Uttar Pradesh',spices:['Byadgi Chilli','Turmeric','Pepper'],vol:'200+ tons/yr',note:'Premium retail brand. Strict quality norms.',contact:'DSGroup procurement dept'},
+  {name:'Eastern Condiments',type:'fmcg',city:'Kochi',state:'Kerala',spices:['Pepper','Turmeric','Chilli'],vol:'100+ tons/yr',note:'Kerala-based brand. Strong South India. Active Byadgi buyer.',contact:'Factory: Edayar, Kochi'},
+  {name:'Priya Foods',type:'fmcg',city:'Hyderabad',state:'Telangana',spices:['Byadgi Chilli','Turmeric'],vol:'50–150 tons/yr',note:'Telugu cuisine focus. Pickle + masala. High chilli use.',contact:'priyafoods.com'},
+  {name:'Aachi Masala',type:'fmcg',city:'Chennai',state:'Tamil Nadu',spices:['Turmeric','Chilli Powder','Pepper'],vol:'200+ tons/yr',note:'TN dominant brand. Aggressive procurement Sep–Nov.',contact:'Aachi Group procurement'},
+  {name:'DMart (Avenue Supermarts)',type:'fmcg',city:'Mumbai',state:'Multiple',spices:['All Spices','Rice','Cashews'],vol:'Retail chain scale',note:'Private label spice sourcing. Prefers direct Karnataka suppliers.',contact:'DMart vendor portal'},
+  {name:'BigBasket (Tata Digital)',type:'fmcg',city:'Bengaluru',state:'Multiple',spices:['All Spices','Rice','Cashews'],vol:'E-commerce scale',note:"India's largest online grocery. Active direct sourcing from Karnataka.",contact:'BigBasket supplier onboarding'},
+  {name:'Reliance Fresh / JioMart',type:'fmcg',city:'Mumbai',state:'Multiple',spices:['All Spices','Rice','Cashews'],vol:'Retail scale',note:'Private label spice sourcing. Large volumes for retail.',contact:'Reliance Retail vendor portal'},
+  // HOTELS
+  {name:'ITC Hotels — Purchasing',type:'hotel',city:'Kolkata',state:'Multiple',spices:['All Spices','Pepper','Turmeric'],vol:'Annual central procurement',note:'100+ properties. High quality standards. Central annual tender.',contact:'IHCL Supply Chain Division'},
+  {name:'Taj Hotels (IHCL)',type:'hotel',city:'Mumbai',state:'Multiple',spices:['Pepper','Byadgi Chilli','Dry Ginger'],vol:'Annual tender',note:'170+ India properties. Annual spice procurement tender.',contact:'IHCL procurement'},
+  {name:'Oberoi Hotels Group',type:'hotel',city:'Delhi',state:'Multiple',spices:['Pepper','Turmeric','Dry Ginger'],vol:'Annual contracts',note:'Premium hotels. Very strict quality, prefer certified suppliers.',contact:'The Oberoi Group procurement'},
+  {name:'Lemon Tree Hotels',type:'hotel',city:'Delhi',state:'Multiple',spices:['Chilli Powder','Turmeric','Pepper'],vol:'Mid-size annual',note:'85+ hotels, growing chain. Active procurement Oct–Dec.',contact:'Hospitality Purchasing Dept'},
+  {name:'Tamil Nadu Hotel Owners Assoc.',type:'hotel',city:'Chennai',state:'Tamil Nadu',spices:['All Spices','Turmeric','Pepper'],vol:'35,000+ member hotels',note:'Annual spice procurement. Great bulk approach via association.',contact:'TNHOA Chennai office'},
+  {name:'Kolkata Hotel & Restaurant Assoc.',type:'hotel',city:'Kolkata',state:'West Bengal',spices:['Turmeric','Dry Ginger','Chilli'],vol:'2000+ HORECA buyers',note:'Collective procurement interest for Bengal region.',contact:'KHRA Kolkata'},
+  // MANDI
+  {name:'Vashi APMC — Spice Traders',type:'mandi',city:'Navi Mumbai',state:'Maharashtra',spices:['All Spices','Chilli','Turmeric'],vol:'Mumbai hub — very large',note:"Mumbai's central spice wholesale. 50+ major traders.",contact:'Navi Mumbai APMC office'},
+  {name:'Khari Baoli Market Delhi',type:'mandi',city:'Delhi',state:'Delhi',spices:['All Spices'],vol:"Asia's largest spice market",note:'500+ wholesale traders. Key target for all commodities.',contact:'Direct market visit essential'},
+  {name:'Erode APMC Turmeric Traders',type:'mandi',city:'Erode',state:'Tamil Nadu',spices:['Turmeric'],vol:"Asia's largest turmeric market",note:'Source AND wholesale hub. Connect here for turmeric both ways.',contact:'Erode APMC: 0424-2252290'},
+  {name:'Guntur APMC Chilli Market',type:'mandi',city:'Guntur',state:'Andhra Pradesh',spices:['Chilli','Chilli Powder'],vol:"World's largest chilli market",note:'Largest chilli wholesale globally. Buyers from all over India.',contact:'Guntur APMC'},
+  {name:'Koyambedu Market Chennai',type:'mandi',city:'Chennai',state:'Tamil Nadu',spices:['All Spices','Turmeric','Chilli'],vol:'South India hub',note:'Largest produce market in South Asia. Key Chennai node.',contact:'Koyambedu CMWSSB'},
+  {name:'Masjid Bunder Mumbai',type:'mandi',city:'Mumbai',state:'Maharashtra',spices:['All Spices','Dry Ginger','Pepper'],vol:'Large wholesale',note:'Traditional Mumbai spice district. Multiple large traders.',contact:'Direct approach'},
+  // EXPORT
+  {name:'Synthite Industries',type:'export',city:'Kolenchery',state:'Kerala',spices:['Pepper','Chilli','Turmeric'],vol:'Industrial scale',note:"World's largest spice oleoresin manufacturer. Huge raw material demand.",contact:'Synthite procurement'},
+  {name:'AVT McCormick',type:'export',city:'Kochi',state:'Kerala',spices:['Pepper','Cardamom','Turmeric'],vol:'Export tons/month',note:'JV of AVT & McCormick USA. Major exporter. Quality supplier needs.',contact:'AVT Group Kochi'},
+  {name:'Akay Flavours & Aromatics',type:'export',city:'Kochi',state:'Kerala',spices:['Turmeric','Pepper','Dry Ginger'],vol:'Export scale',note:'Curcumin extraction. Needs large turmeric volumes.',contact:'Akay procurement'},
+  // INDUSTRIAL
+  {name:'Haldirams Nagpur',type:'industrial',city:'Nagpur',state:'Maharashtra',spices:['Chilli Powder','Turmeric','Pepper'],vol:'Industrial scale',note:'Largest namkeen brand. Massive chilli powder consumption year-round.',contact:'Vendor portal'},
+  {name:'Bikaji Foods',type:'industrial',city:'Bikaner',state:'Rajasthan',spices:['Chilli Powder','Turmeric'],vol:'100+ tons/month',note:'Large snack brand growing rapidly. High chilli demand.',contact:'Bikaji procurement'},
+  {name:'Bikanervala',type:'industrial',city:'Delhi',state:'Delhi',spices:['Chilli Powder','Turmeric','Pepper'],vol:'Industrial scale',note:'Large chain + FMCG. Active buyer Oct–Feb.',contact:'Corporate office Delhi'},
+  {name:'ID Fresh Food',type:'industrial',city:'Bengaluru',state:'Karnataka',spices:['Turmeric','Chilli','Ginger'],vol:'Growing demand',note:'South India fresh food brand expanding nationally.',contact:'ID Fresh procurement'},
+  {name:'ITC Sunfeast / Bingo',type:'industrial',city:'Chennai',state:'Multiple',spices:['Chilli Powder','Pepper'],vol:'Industrial scale',note:'Snack division. Annual vendor registration.',contact:'ITC Agri procurement'},
+  {name:'Nestle India',type:'industrial',city:'Gurgaon',state:'Haryana',spices:['Turmeric','Pepper'],vol:'Maggi + culinary',note:'Large spice user for Maggi masala and culinary products.',contact:'Nestle India procurement'},
+  {name:'Mother Dairy (NDDB)',type:'industrial',city:'Delhi',state:'Delhi',spices:['Turmeric','Chilli'],vol:'Large institutional',note:'Processed foods division. Government-linked reliable buyer.',contact:'Mother Dairy procurement'},
+];
+
+let buyerFilter = 'all';
+function setBuyerFilter(t, el) {
+  buyerFilter = t;
+  document.querySelectorAll('#panel-buyers .fbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  filterBuyers();
+}
+function filterBuyers() {
+  const q = document.getElementById('buyer-search').value.toLowerCase();
+  const list = BUYERS.filter(b =>
+    (buyerFilter==='all' || b.type===buyerFilter) &&
+    (b.name.toLowerCase().includes(q) || b.city.toLowerCase().includes(q) || b.spices.join(' ').toLowerCase().includes(q))
+  );
+  renderBuyerCards(list);
+}
+function renderBuyerCards(list) {
+  if (!list.length) { document.getElementById('buyer-grid').innerHTML='<div style="color:var(--muted);font-size:.68rem;padding:1rem">No buyers match filter.</div>'; return; }
+  document.getElementById('buyer-grid').innerHTML = list.map(b => `
+    <div class="bcard">
+      <div class="tier-badge t-${b.type}">${b.type}</div>
+      <div class="bname">${b.name}</div>
+      <div class="bcity">📍 ${b.city}, ${b.state}</div>
+      <div class="tags">${b.spices.map(s=>`<span class="stag">${s}</span>`).join('')}</div>
+      <div class="bvol">Volume: <span>${b.vol}</span></div>
+      <div class="bnote">${b.note}</div>
+      <div class="bcontact">📞 ${b.contact}</div>
+      <div class="row-btns">
+        <button class="btn-xs btn-green" onclick="markCalled('${b.name.replace(/'/g,"\\'")}')">✓ Called</button>
+        <button class="btn-xs btn-gray" onclick="openModal('${b.name.replace(/'/g,"\\'")}')">+ Note</button>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  SUPPLIERS
+// ═══════════════════════════════════════════════════
+const SUPPLIERS = [
+  {name:'Byadgi APMC Aggregator Network',loc:'Byadgi, Haveri District',state:'Karnataka',comms:['Byadgi Chilli','Chilli Powder'],note:'Direct mandi access. Multiple commission agents. Best prices Nov–Feb.',contact:'Haveri APMC: 08375-220011'},
+  {name:'Haveri Chilli Farmers Cooperative',loc:'Haveri, Karnataka',state:'Karnataka',comms:['Byadgi Chilli','Dry Red Chilli'],note:'Direct farmer cooperative. Better than mandi price for bulk. Min 1 ton.',contact:'APMC Haveri'},
+  {name:'Ranebennur Chilli Traders',loc:'Ranebennur, Karnataka',state:'Karnataka',comms:['Byadgi Chilli','Dry Red Chilli'],note:'Secondary Byadgi region. Good quality, competitive. Farm gate possible.',contact:'Via local APMC agents'},
+  {name:'Hubli Spice Wholesale Market',loc:'Hubli, Karnataka',state:'Karnataka',comms:['Byadgi Chilli','Turmeric','Dry Ginger'],note:'Major wholesale hub for North Karnataka. Aggregates surrounding districts.',contact:'Hubli APMC'},
+  {name:'Mangalore Cashew Exporters Hub',loc:'Mangalore, Karnataka',state:'Karnataka',comms:['Raw Cashew','Cashew W320','W240'],note:'Port area. Mix of raw and processed. Export-grade available.',contact:'CEPCI — Cashew Export Promotion Council'},
+  {name:'Raichur Rice Mill Network',loc:'Raichur, Karnataka',state:'Karnataka',comms:['Sona Masoori','Raw Rice','Boiled Rice'],note:"Karnataka's largest rice district. Local sourcing for South Indian buyers.",contact:'Raichur APMC'},
+  // Kerala
+  {name:'Wayanad Pepper Growers Cooperative',loc:'Kalpetta, Wayanad',state:'Kerala',comms:['Black Pepper MG1','Pepper Powder'],note:'Direct farmer collective. Annual contract possible for 5+ tons.',contact:'VFPCK Wayanad'},
+  {name:'Mananthavady Pepper & Ginger Traders',loc:'Mananthavady, Wayanad',state:'Kerala',comms:['Black Pepper','Dry Ginger'],note:'Established traders. Both black pepper and Wayanad dry ginger.',contact:'Wayanad APMC'},
+  {name:'Kochi Pepper Exchange Members',loc:'Kochi, Kerala',state:'Kerala',comms:['Black Pepper MG1/MG2','White Pepper'],note:'Exchange member traders. Benchmark pricing. For large lots.',contact:'Kochi Pepper Exchange: 0484-2369735'},
+  {name:'Kerala State Cooperative Mktg Federation',loc:'Thiruvananthapuram',state:'Kerala',comms:['Pepper','Cardamom','Turmeric'],note:'Government cooperative. Reliable quality, fixed pricing.',contact:'Kerafed: 0471-2328285'},
+  {name:'Kollam Cashew Processing Hub',loc:'Kollam, Kerala',state:'Kerala',comms:['Cashew W180','W240','W320','Splits'],note:"World's cashew capital. 600+ units. Best source for processed grades.",contact:'CEPCI: 0474-2746027'},
+  {name:'Perinthalmanna Dry Ginger Growers',loc:'Malappuram, Kerala',state:'Kerala',comms:['Dry Ginger Kerala Grade'],note:'Kerala dry ginger is premium grade. Sought in Mumbai and Gulf export.',contact:'Malappuram APMC'},
+  // Tamil Nadu
+  {name:'Erode APMC Commission Agents',loc:'Erode, Tamil Nadu',state:'Tamil Nadu',comms:['Turmeric Finger','Turmeric Bulb','Turmeric Powder'],note:"Asia's largest turmeric market. Best procurement Feb–May.",contact:'Erode APMC: 0424-2252290'},
+  {name:'Dharapuram Turmeric Farmers Direct',loc:'Dharapuram, Tamil Nadu',state:'Tamil Nadu',comms:['Turmeric Finger Grade A'],note:'High curcumin content. Premium for FMCG buyers. Direct farm possible.',contact:'TN APMC Salem'},
+  {name:'Salem Dry Ginger Market',loc:'Salem, Tamil Nadu',state:'Tamil Nadu',comms:['Dry Ginger','Turmeric'],note:'Multi-commodity hub. Competitive vs Wayanad for volume buyers.',contact:'Salem APMC: 0427-2331999'},
+  {name:'Pollachi Cashew Processors',loc:'Pollachi, Tamil Nadu',state:'Tamil Nadu',comms:['Cashew W240','W320'],note:'Processed cashew kernels. Good volume for cashew supply.',contact:'CEPCI Tamil Nadu'},
+  // Andhra Pradesh
+  {name:'Guntur Chilli Commission Agents',loc:'Guntur, Andhra Pradesh',state:'Andhra Pradesh',comms:['Guntur Chilli','Chilli Powder'],note:'Alternate chilli source. Different variety from Byadgi — wider market coverage.',contact:'Guntur APMC'},
+  {name:'Kurnool Rice Mills Association',loc:'Kurnool, Andhra Pradesh',state:'Andhra Pradesh',comms:['Sona Masoori Raw','HMT Rice'],note:'Large rice mill cluster. Direct mill pricing. Best Oct–Dec.',contact:'AP State Civil Supplies'},
+];
+
+let suppFilter = 'all';
+function setSuppFilter(s, el) {
+  suppFilter = s;
+  document.querySelectorAll('#panel-suppliers .fbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  filterSuppliers();
+}
+function filterSuppliers() {
+  const q = document.getElementById('supp-search').value.toLowerCase();
+  const list = SUPPLIERS.filter(s =>
+    (suppFilter==='all' || s.state===suppFilter) &&
+    (s.name.toLowerCase().includes(q) || s.loc.toLowerCase().includes(q) || s.comms.join(' ').toLowerCase().includes(q))
+  );
+  renderSuppCards(list);
+}
+function renderSuppCards(list) {
+  if (!list.length) { document.getElementById('supp-grid').innerHTML='<div style="color:var(--muted);font-size:.68rem;padding:1rem">No suppliers match filter.</div>'; return; }
+  document.getElementById('supp-grid').innerHTML = list.map(s => `
+    <div class="scard">
+      <div class="bname">${s.name}</div>
+      <div style="font-size:.58rem;color:#60a880;margin-bottom:.4rem">📍 ${s.loc}</div>
+      <div class="tags">${s.comms.map(c=>`<span class="ctag">${c}</span>`).join('')}</div>
+      <div class="bnote">${s.note}</div>
+      <div class="bcontact">📞 ${s.contact}</div>
+      <div class="row-btns">
+        <button class="btn-xs btn-green" onclick="markCalled('${s.name.replace(/'/g,"\\'")}')">✓ Contacted</button>
+        <button class="btn-xs btn-gray" onclick="openModal('${s.name.replace(/'/g,"\\'")}')">+ Note</button>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  PIPELINE
+// ═══════════════════════════════════════════════════
+let deals = JSON.parse(localStorage.getItem('deals_v2') || '[]');
+const SMAP = {new:'s-new',follow:'s-follow',neg:'s-neg',closed:'s-closed',lost:'s-lost'};
+const SLABEL = {new:'New Lead',follow:'Follow-up',neg:'Negotiating',closed:'Closed ✓',lost:'Lost'};
+
+function addDeal() {
+  const buyer = document.getElementById('p-buyer').value.trim();
+  if (!buyer) { alert('Enter buyer name'); return; }
+  deals.unshift({
+    id:Date.now(),
+    date:new Date().toLocaleDateString('en-IN'),
+    buyer,
+    city:document.getElementById('p-city').value,
+    comm:document.getElementById('p-comm').value,
+    qty:document.getElementById('p-qty').value,
+    status:document.getElementById('p-status').value,
+    src:document.getElementById('p-src').value,
+    note:''
+  });
+  localStorage.setItem('deals_v2', JSON.stringify(deals));
+  ['p-buyer','p-city','p-qty'].forEach(id=>document.getElementById(id).value='');
+  renderPipeline();
+  updateKPIs();
+}
+
+function updateDealStatus(id, val) {
+  deals = deals.map(d => d.id===id ? {...d, status:val} : d);
+  localStorage.setItem('deals_v2', JSON.stringify(deals));
+  updateKPIs();
+}
+
+function deleteDeal(id) {
+  if (!confirm('Delete this deal?')) return;
+  deals = deals.filter(d => d.id!==id);
+  localStorage.setItem('deals_v2', JSON.stringify(deals));
+  renderPipeline();
+  updateKPIs();
+}
+
+function renderPipeline() {
+  if (!deals.length) {
+    document.getElementById('pipe-tbody').innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:2rem;font-size:.68rem">No deals yet. Add your first lead above.</td></tr>';
+    return;
+  }
+  document.getElementById('pipe-tbody').innerHTML = deals.map((d,i) => `
+    <tr>
+      <td style="color:var(--muted)">${deals.length-i}</td>
+      <td style="color:var(--muted);font-size:.58rem">${d.date}</td>
+      <td style="color:var(--cream);font-weight:500">${d.buyer}</td>
+      <td style="color:var(--muted)">${d.city}</td>
+      <td style="color:var(--turmeric)">${d.comm}</td>
+      <td style="color:var(--muted)">${d.qty}</td>
+      <td><span class="sbadge ${SMAP[d.status]}">${SLABEL[d.status]}</span></td>
+      <td style="color:var(--muted);font-size:.58rem">${d.src}</td>
+      <td style="color:var(--muted);font-size:.58rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.note||'—'}</td>
+      <td style="display:flex;align-items:center;gap:.3rem">
+        <select onchange="updateDealStatus(${d.id},this.value)" style="background:var(--surface2);border:1px solid var(--line);color:var(--muted);font-size:.58rem;padding:2px 3px;font-family:'IBM Plex Mono',monospace">
+          ${Object.keys(SMAP).map(k=>`<option value="${k}" ${d.status===k?'selected':''}>${SLABEL[k]}</option>`).join('')}
+        </select>
+        <button class="del-btn" onclick="deleteDeal(${d.id})">✕</button>
+      </td>
+    </tr>`).join('');
+}
+
+function updateKPIs() {
+  const active = deals.filter(d=>!['closed','lost'].includes(d.status));
+  document.getElementById('k-leads').textContent = active.length;
+  document.getElementById('k-follow').textContent = deals.filter(d=>d.status==='follow').length;
+  const thisMonth = deals.filter(d=>{
+    if(d.status!=='closed') return false;
+    const parts = d.date.split('/');
+    if(parts.length===3){const m=parseInt(parts[1])-1,y=parseInt(parts[2]);return m===CM&&y===NOW.getFullYear();}
+    return false;
+  });
+  document.getElementById('k-closed').textContent = thisMonth.length;
+}
+
+// ═══════════════════════════════════════════════════
+//  DAILY INTEL
+// ═══════════════════════════════════════════════════
+function renderIntel() {
+  const intel = MONTH_INTEL[CM];
+  document.getElementById('intel-hi').innerHTML = `
+    <div class="intel-item hi">
+      <div class="intel-hd"><span class="itag">Seasonal Alert</span><span class="itime">${MONTHS_FULL[CM]}</span></div>
+      <div class="ititle">${intel.title}</div>
+      <div class="ibody">${intel.body}</div>
+    </div>
+    <div class="intel-item hi">
+      <div class="intel-hd"><span class="itag">Procurement Priority</span><span class="itime">Ongoing</span></div>
+      <div class="ititle">Byadgi new season lock-in window</div>
+      <div class="ibody">November–February is the golden window for Byadgi chilli. Fix supplier contracts at harvest lows. Prices rise 20–40% by August. Act now if in season.</div>
+    </div>
+    <div class="intel-item hi">
+      <div class="intel-hd"><span class="itag">FMCG Outreach</span><span class="itime">Sep–Nov</span></div>
+      <div class="ititle">Annual vendor registration windows are open</div>
+      <div class="ibody">MTR, Everest, MDH, Catch Spices all run annual procurement Sep–Nov. Getting on their vendor list now means orders for next 12 months.</div>
+    </div>`;
+
+  document.getElementById('intel-med').innerHTML = `
+    <div class="intel-item med">
+      <div class="intel-hd"><span class="itag">Price Signal</span><span class="itime">Daily</span></div>
+      <div class="ititle">NCDEX Turmeric Futures — leading price indicator</div>
+      <div class="ibody">Rising NCDEX futures = lock procurement contracts early. Check ncdex.com daily before calling Erode suppliers.</div>
+    </div>
+    <div class="intel-item med">
+      <div class="intel-hd"><span class="itag">Export Opportunity</span><span class="itime">Year-round</span></div>
+      <div class="ititle">Gulf countries — active Byadgi chilli importers</div>
+      <div class="ibody">UAE, Saudi, Kuwait: large South Indian expat demand for Byadgi (low pungency, colour). APEDA registration opens this channel at zero warehouse investment.</div>
+    </div>
+    <div class="intel-item med">
+      <div class="intel-hd"><span class="itag">Market Gap</span><span class="itime">Watch</span></div>
+      <div class="ititle">Low Agmarknet arrivals = your opportunity</div>
+      <div class="ibody">When a city shows low daily arrivals on Agmarknet, buyers there are short on supply. That city is your highest priority call list for the next 48 hours.</div>
+    </div>`;
+
+  document.getElementById('intel-lo').innerHTML = `
+    <div class="intel-item lo">
+      <div class="intel-hd"><span class="itag">Network</span><span class="itime">Build now</span></div>
+      <div class="ititle">WhatsApp mandi group access is non-negotiable</div>
+      <div class="ibody">Real trading happens on WhatsApp. Request access to Byadgi Traders, Wayanad Pepper, Erode Turmeric groups via your APMC contacts. This gives you real-time demand signals before they hit the market.</div>
+    </div>
+    <div class="intel-item lo">
+      <div class="intel-hd"><span class="itag">Long-term</span><span class="itime">Once</span></div>
+      <div class="ititle">APEDA registration — unlocks export buyers</div>
+      <div class="ibody">Register at apeda.gov.in. One-time investment that gives access to export buyers in Middle East, UK, and USA. Multiplies your buyer network significantly.</div>
+    </div>
+    <div class="intel-item lo">
+      <div class="intel-hd"><span class="itag">Intelligence</span><span class="itime">Weekly</span></div>
+      <div class="ititle">Zauba / Export Genius — find who is importing</div>
+      <div class="ibody">Search HS code 09042290 (chilli powder) on exportgenius.in or zauba.com. Companies importing regularly are high-intent buyers needing supply.</div>
+    </div>`;
+
+  document.getElementById('checklist').innerHTML = [
+    {t:'9:00 AM', a:'Refresh Live Prices tab — auto-fetch from data.gov.in'},
+    {t:'9:15 AM', a:'Check IndiaMART Buy Leads for new spice requests', l:'https://www.indiamart.com/buyleads/'},
+    {t:'9:30 AM', a:'Check Agmarknet daily arrivals for supply gap signals', l:'https://agmarknet.gov.in'},
+    {t:'10:00 AM', a:'Make 3 outreach calls — target this month\'s peak cities'},
+    {t:'12:00 PM', a:'Log all morning inquiries in Deal Pipeline tab'},
+    {t:'3:00 PM', a:'Follow up on deals marked "Follow-up" in pipeline'},
+    {t:'5:00 PM', a:'Check WhatsApp mandi groups for late price movements'},
+  ].map(i=>`<div class="check-row"><span class="check-time">${i.t}</span><span class="check-text">${i.a}${i.l?` <a href="${i.l}" target="_blank" style="color:var(--saffron)">→</a>`:''}</span></div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  MODAL (notes)
+// ═══════════════════════════════════════════════════
+let modalTarget = '';
+function openModal(name) {
+  modalTarget = name;
+  document.getElementById('modal-ctx').textContent = 'Note for: ' + name;
+  const notes = JSON.parse(localStorage.getItem('notes_v2')||'{}');
+  document.getElementById('modal-note').value = notes[name]||'';
+  document.getElementById('noteModal').classList.add('open');
+}
+function closeModal() { document.getElementById('noteModal').classList.remove('open'); }
+function saveNote() {
+  const notes = JSON.parse(localStorage.getItem('notes_v2')||'{}');
+  notes[modalTarget] = document.getElementById('modal-note').value;
+  localStorage.setItem('notes_v2', JSON.stringify(notes));
+  closeModal();
+}
+function markCalled(name) {
+  const notes = JSON.parse(localStorage.getItem('notes_v2')||'{}');
+  const ts = new Date().toLocaleString('en-IN');
+  notes[name] = (notes[name]?notes[name]+'\n':'') + '✓ Called on ' + ts;
+  localStorage.setItem('notes_v2', JSON.stringify(notes));
+  alert('Logged: Called ' + name);
+}
+
+// ═══════════════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════════════
+function switchTab(name, el) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  el.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════════════════
+//  CLOCK
+// ═══════════════════════════════════════════════════
+function tickClock() {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(tickClock,1000);
+tickClock();
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+function init() {
+  initApiBanner();
+  renderOverview();
+  renderPrices();
+  renderHeatmap('demand-heatmap', 9);
+  renderHeatmap('ov-heatmap', 6);
+  renderSeasonCal();
+  renderBuyerCards(BUYERS);
+  renderSuppCards(SUPPLIERS);
+  renderPipeline();
+  renderIntel();
+  updateKPIs();
+
+  // Auto-fetch prices if key exists
+  if (getApiKey()) {
+    setTimeout(fetchAllPrices, 1000);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
