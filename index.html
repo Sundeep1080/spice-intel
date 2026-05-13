@@ -3955,17 +3955,12 @@ function clearPreOpen(){preOpenPrices={};gapScanResults=[];renderGapOpen();toast
 
 function exportGapCSV(){
   if(!gapScanResults.length){toast('No gap data to export','err');return}
-  const hdrs='Symbol,Sector,PrevClose,PreOpen,GapPct,GapType,Zone,HMA,SMI,CloseStr,VolRatio,Score,Reasons';
-  const rows=gapScanResults.map(r=>[
-    r.sym,r.sector,r.prevClose,r.preOpenPrice||'',
-    r.gapPct!==null?r.gapPct:'',r.gapType,r.bandZone,
-    r.hmaDir,r.smiNow.toFixed(1),r.closeStrength.toFixed(2),
-    r.volRatio.toFixed(2),r.candidateScore,'"'+r.reasons.join(' | ')+'"'
-  ].join(','));
-  const blob=new Blob([[hdrs,...rows].join('\n')],{type:'text/csv'});
+  // Symbols only — ready for direct TradingView watchlist import
+  const names=gapScanResults.map(r=>r.sym).join('\n');
+  const blob=new Blob([names],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='nandi_gap_'+new Date().toISOString().slice(0,10)+'.csv';
-  a.click();toast('Gap CSV exported','ok');
+  a.click();toast('Gap symbols exported (TradingView ready)','ok');
 }
 
 function computeGapScan(){
