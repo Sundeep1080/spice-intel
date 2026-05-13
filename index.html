@@ -4083,6 +4083,11 @@ function computeGapScan(){
     if(!isActualGap&&!isCandidate)return;
     if(isCandidate&&hmaDir==='flat')return;
 
+    // Cross-reference with allSignals — read-only, no modification
+    const nandiSig=allSignals.find(s=>s.symbol===sym)||null;
+    const inTop50Buy=nandiSig&&nandiSig.signal.startsWith('B')||false;
+    const inTop50Sell=nandiSig&&nandiSig.signal.startsWith('S')||false;
+
     gapScanResults.push({
       sym,sector:info.sector,prevClose,preOpenPrice,gapPct,gapDir,gapType,
       hmaDir,smiNow:parseFloat(smiNow.toFixed(1)),smiRising,bandZone,
@@ -4090,7 +4095,9 @@ function computeGapScan(){
       volRatio,candidateScore,reasons,
       entry,tp,sl,orderDir,
       atr:parseFloat(atr.toFixed(2)),
-      isActualGap,isCandidate
+      isActualGap,isCandidate,
+      nandiSig:nandiSig?{signal:nandiSig.signal,score:nandiSig.score,zone:nandiSig.band_zone}:null,
+      inTop50Buy,inTop50Sell
     });
   });
 
@@ -4191,6 +4198,17 @@ function renderGapOpen(){
         <span class="c-bull">T:&#8377;${tpPx.toFixed(1)}</span><br>
         <span class="c-bear">S:&#8377;${slPx.toFixed(1)}</span>
       </td>
+      <td style="text-align:center;min-width:80px">
+        ${r.inTop50Buy
+          ?`<div><span class="b b-bull" style="font-size:8px">${r.nandiSig.signal}</span></div>
+             <div style="font-family:var(--mono);font-size:9px;font-weight:700;color:var(--bull)">${r.nandiSig.score}</span></div>
+             <div style="font-family:var(--mono);font-size:7px;color:var(--bull)">&#9733; BUY</div>`
+          :r.inTop50Sell
+          ?`<div><span class="b b-bear" style="font-size:8px">${r.nandiSig.signal}</span></div>
+             <div style="font-family:var(--mono);font-size:9px;font-weight:700;color:var(--bear)">${r.nandiSig.score}</div>
+             <div style="font-family:var(--mono);font-size:7px;color:var(--bear)">&#9733; SELL</div>`
+          :'<span style="font-family:var(--mono);font-size:8px;color:var(--text3)">&#8212;</span>'}
+      </td>
       <td>
         <button class="${orderCls}" onclick="showOrderModal('${r.sym}','${r.orderDir}',${refPx},${tpPx},${slPx},1)">
           ${r.orderDir==='BUY'?'&#9650; BUY':'&#9660; SELL'}
@@ -4215,6 +4233,7 @@ function renderGapOpen(){
         <th style="text-align:center">Score</th>
         <th>Reasons</th>
         <th style="text-align:right">Entry/TP/SL</th>
+        <th style="text-align:center;color:var(--amber)">NANDI Sig</th>
         <th>Order</th>
       </tr></thead>
       <tbody>${gapScanResults.length?gapScanResults.map(rowHtml).join(''):'<tr><td colspan="14" class="empty">No gap candidates found</td></tr>'}</tbody>
