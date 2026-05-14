@@ -2462,6 +2462,9 @@ async function confirmPlaceOrder(){
 // ═══════════════════════════════════════════════════════════
 async function placeGTT(sym,qty,entryPx,tpPx,slPx,exitTxn,product,resultEl,logId){
   try{
+    // Round GTT prices to nearest 0.10 (nearest paise zero, e.g. 123.56 -> 123.60)
+    const r10=v=>Math.round(v*10)/10;
+    tpPx=r10(tpPx);slPx=r10(slPx);
     const condition={exchange:'NSE',tradingsymbol:sym,trigger_values:[slPx,tpPx],last_price:entryPx};
     const orders=[
       {exchange:'NSE',tradingsymbol:sym,transaction_type:exitTxn,quantity:qty,order_type:'LIMIT',product,price:slPx},
