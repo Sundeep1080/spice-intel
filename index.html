@@ -6,9 +6,9 @@
 <meta name="theme-color" content="#d97706">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="NANDI v8">
+<meta name="apple-mobile-web-app-title" content="TRAM">
 <link rel="manifest" href="manifest.json">
-<title>NANDI v8 · Self-Learning Signal Intelligence</title>
+<title>TRADING MACHINES · TRAM · Signal Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -440,10 +440,10 @@ tr.earn td:first-child{border-left:3px solid var(--pink)}
 <!-- HEADER -->
 <div class="masthead">
   <div class="brand">
-    <div class="brand-icon">N8</div>
+    <div class="brand-icon" style="font-size:8px;letter-spacing:0">TRAM</div>
     <div class="brand-text">
-      <h1>NANDI</h1>
-      <p>v8 · Self-Learning Signal Intelligence · NSE</p>
+      <h1>TRADING MACHINES</h1>
+      <p>T R A M · Signal Intelligence · NSE</p>
     </div>
   </div>
   <div class="pills">
@@ -1192,9 +1192,9 @@ tr.earn td:first-child{border-left:3px solid var(--pink)}
 
   </div>
 
-  <!-- NANDI ORDER LOG -->
+  <!-- TRAM ORDER LOG -->
   <div id="brk-nandilogs" class="brk-panel card" style="display:none">
-    <div class="ct"><i class="fas fa-robot"></i> NANDI Order Log
+    <div class="ct"><i class="fas fa-robot"></i> TRAM Order Log
       <button class="btn btn-d" style="font-size:8px;padding:2px 6px;margin-left:auto" onclick="exportOrderLog()"><i class="fas fa-download"></i> CSV</button>
     </div>
     <div class="tw"><table>
@@ -3243,7 +3243,7 @@ function exitBrokerPosition(sym,direction,cmp,qty,product){
 
 function syncOrderLogToTable2(){
   const tb=document.getElementById('orderLogBody2');if(!tb)return;
-  if(!orderLog.length){tb.innerHTML='<tr><td colspan="13" class="empty">No NANDI orders yet</td></tr>';return}
+  if(!orderLog.length){tb.innerHTML='<tr><td colspan="13" class="empty">No TRAM orders yet</td></tr>';return}
   tb.innerHTML=orderLog.map(r=>{
     const pnlCls=r.pnl_pct>0?'c-bull':r.pnl_pct<0?'c-bear':'c-dim';
     const statusBadge=r.status==='TP_HIT'?'<span class="b b-bull" style="font-size:7px">TP✓</span>':r.status==='SL_HIT'?'<span class="b b-bear" style="font-size:7px">SL✗</span>':r.status==='EXITED'?'<span class="b b-dim" style="font-size:7px">EXIT</span>':r.status==='CANCELLED'?'<span class="b b-amb" style="font-size:7px">CNCL</span>':'<span class="b b-open" style="font-size:7px">OPEN</span>';
@@ -3882,7 +3882,7 @@ function renderRegimeCrossPerf(){
   html+='<div style="overflow-x:auto"><table><thead><tr><th>Signal</th><th>Aligned</th><th>Partial</th><th>Contrarian</th><th>Neutral</th></tr></thead><tbody>';
   SIGS.forEach(function(sig){html+='<tr><td style="font-family:var(--mono);font-weight:700;color:'+(sig.startsWith('B')?'var(--bull)':'var(--bear)')+'">'+sig+'</td>';['aligned','partial','contrarian','neutral'].forEach(function(aln){var o=SA[sig+'|'+aln]||{w:0,t:0},w=wr(o),cl=w===null?'':w>=70?'background:rgba(5,150,105,.15)':w>=60?'background:rgba(5,150,105,.08)':w>=50?'':'background:rgba(220,38,38,.08)';html+='<td style="'+cl+';text-align:center;font-family:var(--mono);font-size:9px">'+(w!==null?w+'%<br><span style="font-size:7px;opacity:.6">n='+o.t+'</span>':'—')+'</td>'});html+='</tr>'});
   html+='</tbody></table></div></div>';
-  html+='<div style="background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(13,148,136,.04));border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px;font-family:var(--mono);font-size:9px"><div style="font-weight:700;color:var(--bright);margin-bottom:8px">KEY PRINCIPLE — NANDI ALWAYS SHOWS TOP 25 BUY + SELL IN EVERY REGIME</div><div>In any bull/bear/mixed market there will always be strong buy and sell setups among 700 stocks. WITH MKT signals = highest overnight conviction. CONTRA signals = individual stock story — can still be profitable.</div></div>';
+  html+='<div style="background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(13,148,136,.04));border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px;font-family:var(--mono);font-size:9px"><div style="font-weight:700;color:var(--bright);margin-bottom:8px">KEY PRINCIPLE — TRAM ALWAYS SHOWS TOP 25 BUY + SELL IN EVERY REGIME</div><div>In any bull/bear/mixed market there will always be strong buy and sell setups among 700 stocks. WITH MKT signals = highest overnight conviction. CONTRA signals = individual stock story — can still be profitable.</div></div>';
   el.innerHTML=html;
 }
 
@@ -4236,7 +4236,7 @@ function renderGapOpen(){
         <th style="text-align:center">Score</th>
         <th>Reasons</th>
         <th style="text-align:right">Entry/TP/SL</th>
-        <th style="text-align:center;color:var(--amber)">NANDI Sig</th>
+        <th style="text-align:center;color:var(--amber)">TRAM Sig</th>
         <th>Order</th>
       </tr></thead>
       <tbody>${gapScanResults.length?gapScanResults.map(rowHtml).join(''):'<tr><td colspan="14" class="empty">No gap candidates found</td></tr>'}</tbody>
